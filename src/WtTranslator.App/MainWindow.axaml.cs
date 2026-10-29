@@ -53,6 +53,8 @@ public partial class MainWindow : Window
         AddBtn.Click += (_, _) => Safely(AddToPatch);
         RemoveBtn.Click += (_, _) => Safely(RemoveFromPatch);
         ApplyBtn.Click += (_, _) => Safely(Apply);
+        ImportBtn.Click += async (_, _) => await ImportPatch();
+        ExportBtn.Click += async (_, _) => await ExportPatch();
         DeleteBtn.Click += async (_, _) => await DeleteLang();
     }
 
@@ -140,6 +142,76 @@ public partial class MainWindow : Window
         if (r.Count == 0) return;
         PathBox.Text = r[0].Path.LocalPath;
         SaveSetting(); LoadIndex();
+    }
+
+    static readonly FilePickerFileType PatchFileType = new("Патч WT Translator (JSON)")
+    {
+        Patterns = new[] { "*.json" },
+        MimeTypes = new[] { "application/json" },
+        AppleUniformTypeIdentifiers = new[] { "public.json" }
+    };
+
+    async Task ExportPatch()
+    {
+        try
+        {
+            // Capture the saved profile before opening a native dialog.
+            var profile = _profile;
+            var json = _overlay.ToJson();
+            var count = _overlay.Count;
+            var file = await StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
+            {
+                Title = "Экспорт патча",
+                SuggestedFileName = profile + ".json",
+                DefaultExtension = "json",
+                FileTypeChoices = new[] { PatchFileType },
+                ShowOverwritePrompt = true
+            });
+            if (file is null) return;
+            await using var stream = await file.OpenWriteAsync();
+            stream.SetLength(0);
+            await using (var writer = new StreamWriter(stream))
+                await writer.WriteAsync(json);
+            Say($"Экспортирована версия «{profile}»: {count} правок в {file.Name}.");
+        }
+        catch (Exception e) { Say("Ошибка экспорта патча: " + e.Message); }
+    }
+
+    async Task ImportPatch()
+    {
+        try
+        {
+            var files = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+            {
+                Title = "Импорт патча в новую версию",
+                AllowMultiple = false,
+                FileTypeFilter = new[] { PatchFileType }
+            });
+            if (files.Count == 0) return;
+            Overlay imported;
+            await using (var stream = await files[0].OpenReadAsync())
+            using (var reader = new StreamReader(stream))
+                imported = Overlay.FromJson(await reader.ReadToEndAsync());
+
+            var stem = System.Text.RegularExpressions.Regex.Replace(
+                Path.GetFileNameWithoutExtension(files[0].Name), @"[^\w-]", "-").Trim('-');
+            if (stem.Length == 0) stem = "import";
+            if (stem.Length > 30) stem = stem[..30];
+            var name = stem;
+            for (var suffix = 2; name == "default" || Directory.Exists(Path.Combine(ProfilesDir, name)); suffix++)
+                name = stem + "-" + suffix;
+            var dir = Path.Combine(ProfilesDir, name);
+            Directory.CreateDirectory(dir);
+            try { await File.WriteAllTextAsync(Path.Combine(dir, "overlay.json"), imported.ToJson()); }
+            catch { Directory.Delete(dir, true); throw; }
+            _profile = name;
+            _overlay = imported;
+            var settings = ReadSettings(); settings.Profile = name; WriteSettings(settings);
+            SetProfiles(LocalProfiles());
+            Select(null);
+            Say($"Импортирована версия «{name}»: {_overlay.Count} правок. Нажми «Применить патч».");
+        }
+        catch (Exception e) { Say("Ошибка импорта патча: " + e.Message); }
     }
 
     void RunSearch() => Results.ItemsSource = _index?.Search(SearchBox.Text ?? "");

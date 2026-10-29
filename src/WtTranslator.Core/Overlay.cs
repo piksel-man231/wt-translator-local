@@ -15,7 +15,36 @@ public sealed class Overlay
     public int Count => Files.Values.Sum(f => f.Count);
 
     public string ToJson() => JsonSerializer.Serialize(this, new JsonSerializerOptions { WriteIndented = true, Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping });
-    public static Overlay FromJson(string json) => JsonSerializer.Deserialize<Overlay>(json) ?? new();
+    public static Overlay FromJson(string json)
+    {
+        using var document = JsonDocument.Parse(json);
+        if (document.RootElement.ValueKind != JsonValueKind.Object ||
+            !document.RootElement.TryGetProperty("Files", out var files) || files.ValueKind != JsonValueKind.Object)
+            throw new JsonException("В файле патча должен быть объект Files.");
+        var overlay = JsonSerializer.Deserialize<Overlay>(json)
+            ?? throw new JsonException("Файл патча пуст.");
+        overlay.Validate();
+        return overlay;
+    }
+
+    // Imported patches may only address CSV files directly inside lang.
+    public void Validate()
+    {
+        if (Files is null) throw new JsonException("В файле патча отсутствует Files.");
+        foreach (var (name, entries) in Files)
+        {
+            if (string.IsNullOrWhiteSpace(name) || name.Contains('/') || name.Contains('\\') ||
+                name.Contains(':') || name.Contains('\0') ||
+                !name.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
+                throw new JsonException("Недопустимое имя CSV-файла в патче: " + name);
+            if (entries is null) throw new JsonException("Не указан список замен: " + name);
+            foreach (var (key, entry) in entries)
+                if (string.IsNullOrEmpty(key) || entry is null || entry.Value is null ||
+                    entry.BaseHash is null || entry.BaseHash.Length != 12 ||
+                    !entry.BaseHash.All(Uri.IsHexDigit))
+                    throw new JsonException("Некорректная замена в патче: " + name + ":" + key);
+        }
+    }
 }
 
 public sealed record PatchReport(int Applied, List<string> Conflicts, List<string> MissingKeys);
@@ -57,6 +86,7 @@ public static class Patcher
     /// <summary>Apply overlay in place to a clean lang folder. Conflicting strings (original changed since our edit) are still applied but reported.</summary>
     public static PatchReport Apply(string langDir, Overlay o)
     {
+        o.Validate();
         int applied = 0; var conflicts = new List<string>(); var missing = new List<string>();
         foreach (var (name, entries) in o.Files)
         {

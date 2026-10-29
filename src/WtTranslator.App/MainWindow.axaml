@@ -36,10 +36,14 @@
         <Button Name="RemoveBtn" Content="Убрать из патча" IsEnabled="False" />
       </StackPanel>
     </StackPanel>
-    <Grid Grid.Row="5" ColumnDefinitions="Auto,Auto,*" ColumnSpacing="8">
-      <Button Name="DeleteBtn" Content="Удалить папку lang" />
-      <Button Grid.Column="1" Name="ApplyBtn" Content="Применить патч" />
-      <TextBlock Grid.Column="2" Name="Status" VerticalAlignment="Center" TextWrapping="Wrap" />
-    </Grid>
+    <StackPanel Grid.Row="5" Spacing="8">
+      <WrapPanel Orientation="Horizontal">
+        <Button Name="ImportBtn" Content="Импорт патча…" Margin="0,0,8,6" />
+        <Button Name="ExportBtn" Content="Экспорт патча…" Margin="0,0,8,6" />
+        <Button Name="ApplyBtn" Content="Применить патч" Margin="0,0,8,6" />
+        <Button Name="DeleteBtn" Content="Удалить папку lang" Margin="0,0,8,6" />
+      </WrapPanel>
+      <TextBlock Name="Status" TextWrapping="Wrap" />
+    </StackPanel>
   </Grid>
 </Window>

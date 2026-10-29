@@ -3,7 +3,7 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 RID="${1:-osx-arm64}"
-VERSION="${2:-1.0.0}"
+VERSION="${2:-1.1.0}"
 case "$RID" in osx-arm64|osx-x64) ;; *) echo "Usage: $0 [osx-arm64|osx-x64] [version]" >&2; exit 1 ;; esac
 if [[ "$(uname -s)" != Darwin ]]; then
   echo "Run this script on macOS (codesign is required)." >&2
