@@ -16,6 +16,10 @@ Windows · macOS · Linux · C# · Avalonia
 
 ---
 
+> **Готовые приложения для Windows и macOS уже доступны в этом репозитории!**
+> [Скачать готовую версию из Releases](https://github.com/piksel-man231/wt-translator-local/releases/latest) — Windows x64, macOS Apple Silicon и macOS Intel.
+> Просто скачайте и распакуйте нужный архив. Самостоятельно собирать приложение и устанавливать .NET не требуется.
+
 WT Translator Local — настольный редактор **русской колонки локализации** War Thunder.
 Найдите строку по русскому тексту, английскому тексту или ключу, сохраните свой вариант
 в патч и примените его к папке `lang`.
