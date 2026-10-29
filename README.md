@@ -16,8 +16,8 @@ Windows · macOS · Linux · C# · Avalonia
 
 ---
 
-> **Готовые приложения для Windows и macOS уже доступны в этом репозитории!**
-> [Скачать готовую версию из Releases](https://github.com/piksel-man231/wt-translator-local/releases/latest) — Windows x64, macOS Apple Silicon и macOS Intel.
+> **Готовые приложения для Windows и macOS лежат прямо в папке [binaries/](binaries/) этого репозитория.**
+> [Windows x64](binaries/WtTranslator-win-x64.zip) · [macOS Apple Silicon](binaries/WtTranslator-osx-arm64.zip) · [macOS Intel](binaries/WtTranslator-osx-x64.zip).
 > Просто скачайте и распакуйте нужный архив. Самостоятельно собирать приложение и устанавливать .NET не требуется.
 
 WT Translator Local — настольный редактор **русской колонки локализации** War Thunder.
@@ -47,11 +47,13 @@ WT Translator Local — настольный редактор **русской �
 
 | Система | Скачать v1.1.0 | Как запустить |
 | --- | --- | --- |
-| Windows x64 | [ZIP для Windows](https://github.com/piksel-man231/wt-translator-local/releases/download/v1.1.0/WtTranslator-1.1.0-win-x64.zip) | Распакуйте весь архив и откройте `WtTranslator.App.exe`. |
-| macOS, Apple Silicon (M1 и новее) | [ZIP для Apple Silicon](https://github.com/piksel-man231/wt-translator-local/releases/download/v1.1.0/WtTranslator-1.1.0-osx-arm64.zip) | Распакуйте архив и перенесите `WtTranslator.app` в «Программы». |
-| macOS, Intel | [ZIP для Intel](https://github.com/piksel-man231/wt-translator-local/releases/download/v1.1.0/WtTranslator-1.1.0-osx-x64.zip) | Распакуйте архив и перенесите `WtTranslator.app` в «Программы». |
+| Windows x64 | [ZIP для Windows](binaries/WtTranslator-win-x64.zip) | Распакуйте весь архив и откройте `WtTranslator.App.exe`. |
+| macOS, Apple Silicon (M1 и новее) | [ZIP для Apple Silicon](binaries/WtTranslator-osx-arm64.zip) | Распакуйте архив и перенесите `WtTranslator.app` в «Программы». |
+| macOS, Intel | [ZIP для Intel](binaries/WtTranslator-osx-x64.zip) | Распакуйте архив и перенесите `WtTranslator.app` в «Программы». |
 
-Все выпуски доступны в [GitHub Releases](https://github.com/piksel-man231/wt-translator-local/releases/latest).
+ZIP-архивы хранятся в обычном Git в папке [binaries/](binaries/) и входят в **Code → Download ZIP**.
+Чтобы скачать отдельный архив, откройте его и нажмите **Download raw file**.
+Контрольные суммы доступны в [binaries/SHA256SUMS.txt](binaries/SHA256SUMS.txt).
 На macOS скачанная сборка может потребовать разрешить открытие в
 «Системные настройки → Конфиденциальность и безопасность»: приложение имеет
 ad-hoc подпись и не нотарифицировано Apple.
@@ -162,7 +164,33 @@ chmod +x out/linux-x64/WtTranslator.App
 Для другой архитектуры выберите подходящий RID, например `linux-arm64` или
 `win-arm64`. Эти дополнительные варианты не входят в матрицу CI.
 
-### Автоматические сборки на GitHub
+### Обновить ZIP-файлы в репозитории и опубликовать изменения
+
+При обновлении приложения пересобирайте готовые версии и включайте их в тот же коммит,
+что и исходники. Скрипт выполняется на macOS, проверяет проект, собирает Windows x64
+и обе версии macOS и обновляет папку `binaries/` и контрольные суммы:
+
+```sh
+./scripts/update-binaries.sh
+git add src tests scripts packaging README.md binaries
+git commit -m "Update application and bundled desktop builds"
+./scripts/push-all.sh
+```
+
+Версия берётся из `src/WtTranslator.App/WtTranslator.App.csproj`. Скрипт публикации
+отправляет текущую ветку и теги в **оба** remote — `origin` (GitHub) и `gitlab`
+(GitLab) — и проверяет совпадение опубликованного коммита. У пользователя должны
+быть права записи в оба репозитория. После клонирования настройте второй remote:
+
+```sh
+git remote add gitlab https://gl-0ea1c91d0a84.pikselman.ru/piksel-man231/wt-translator-local.git
+```
+
+[Зеркало проекта на GitLab](https://gl-0ea1c91d0a84.pikselman.ru/piksel-man231/wt-translator-local).
+Порядок работы закреплён в [AGENTS.md](AGENTS.md). Изменения только документации
+не требуют повторной сборки приложения.
+
+### Дополнительные автоматические сборки на GitHub
 
 Workflow **Build and test** собирает проект и запускает тесты на Windows, Linux
 и macOS, затем публикует самостоятельные пакеты для `win-x64`, `linux-x64`,
@@ -177,7 +205,8 @@ git push origin v1.1.0
 
 После успешного CI архивы автоматически попадут в
 [GitHub Releases](https://github.com/piksel-man231/wt-translator-local/releases).
-Для обычного запуска приложения публикация релиза не требуется.
+Основное место скачивания готовых приложений — папка `binaries/` в репозитории.
+GitHub Releases и артефакты CI служат дополнительными копиями.
 
 ## Подготовить War Thunder
 
@@ -336,7 +365,8 @@ src/WtTranslator.App/        Avalonia: интерфейс, профили и н�
 src/WtTranslator.Core/       CSV-парсер, поиск, JSON-патчи и применение
 tests/WtTranslator.Core.Tests/  xUnit-тесты ядра
 packaging/macos/             шаблон Info.plist
-scripts/                    упаковка macOS .app
+scripts/                    пересборка ZIP, упаковка .app и отправка в оба remote
+binaries/                   готовые приложения Windows и macOS
 .github/workflows/          проверка, сборки и релизы
 ```
 

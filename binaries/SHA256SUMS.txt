@@ -1,0 +1,3 @@
+37d50f5dd7c614a5edfa0272809968caae87a4ca6ed21dedfd79b10abb181555  WtTranslator-win-x64.zip
+627b7a78dee85f668acfed827eb6349d91a5ab3e59667dd56c680d5b380024c8  WtTranslator-osx-arm64.zip
+f9dd371df5d856d80acb935097d70f2b09e0f45029d234d4560be8ee82d38d26  WtTranslator-osx-x64.zip
