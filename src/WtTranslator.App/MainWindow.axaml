@@ -1,0 +1,45 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:core="using:WtTranslator.Core"
+        x:Class="WtTranslator.App.MainWindow"
+        Title="WT Translator · Local" Width="1100" Height="700" MinWidth="640" MinHeight="480">
+  <Grid RowDefinitions="Auto,Auto,Auto,*,Auto,Auto" Margin="12">
+    <Grid Grid.Row="0" ColumnDefinitions="Auto,Auto,Auto,*,Auto,Auto" ColumnSpacing="8" Margin="0,0,0,8">
+      <TextBlock Text="Версия патча:" VerticalAlignment="Center" />
+      <ComboBox Grid.Column="1" Name="ProfileBox" MinWidth="160" />
+      <Button Grid.Column="2" Name="RefreshBtn" Content="Обновить" />
+      <TextBox Grid.Column="3" Name="NewName" PlaceholderText="Имя новой версии (буквы, цифры, - _)" />
+      <CheckBox Grid.Column="4" Name="CopyBox" Content="копия текущей" IsChecked="True" VerticalAlignment="Center" />
+      <Button Grid.Column="5" Name="NewBtn" Content="Создать версию" />
+    </Grid>
+    <Grid Grid.Row="1" ColumnDefinitions="*,Auto" ColumnSpacing="8" Margin="0,0,0,8">
+      <TextBox Name="PathBox" PlaceholderText="Папка lang (например .../War Thunder/lang)" />
+      <Button Grid.Column="1" Name="BrowseBtn" Content="Обзор…" />
+    </Grid>
+    <TextBox Grid.Row="2" Name="SearchBox" PlaceholderText="Начни вводить строку или её часть (рус/англ/ключ)…" Margin="0,0,0,8" />
+    <ListBox Grid.Row="3" Name="Results">
+      <ListBox.ItemTemplate>
+        <DataTemplate x:DataType="core:LangRow">
+          <StackPanel Spacing="1">
+            <TextBlock Text="{Binding Title}" FontSize="11" Opacity="0.6" />
+            <TextBlock Text="{Binding Ru}" TextWrapping="Wrap" />
+            <TextBlock Text="{Binding En}" TextWrapping="Wrap" Opacity="0.6" />
+          </StackPanel>
+        </DataTemplate>
+      </ListBox.ItemTemplate>
+    </ListBox>
+    <StackPanel Grid.Row="4" Spacing="6" Margin="0,8,0,8">
+      <TextBlock Name="SelInfo" Text="Выбери строку из списка" Opacity="0.7" TextWrapping="Wrap" />
+      <TextBox Name="NewText" PlaceholderText="На что заменить" AcceptsReturn="True" MinHeight="70" TextWrapping="Wrap" IsEnabled="False" />
+      <StackPanel Orientation="Horizontal" Spacing="8">
+        <Button Name="AddBtn" Content="Добавить в патч" IsEnabled="False" />
+        <Button Name="RemoveBtn" Content="Убрать из патча" IsEnabled="False" />
+      </StackPanel>
+    </StackPanel>
+    <Grid Grid.Row="5" ColumnDefinitions="Auto,Auto,*" ColumnSpacing="8">
+      <Button Name="DeleteBtn" Content="Удалить папку lang" />
+      <Button Grid.Column="1" Name="ApplyBtn" Content="Применить патч" />
+      <TextBlock Grid.Column="2" Name="Status" VerticalAlignment="Center" TextWrapping="Wrap" />
+    </Grid>
+  </Grid>
+</Window>
